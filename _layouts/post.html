@@ -119,21 +119,36 @@ tail_includes:
         d-flex justify-content-between align-items-center mt-5 pb-2
       "
     >
-      <div class="license-wrapper">
-        {% if site.data.locales[lang].copyright.license.template %}
-          {% capture _replacement %}
-        <a href="{{ site.data.locales[lang].copyright.license.link }}">
-          {{ site.data.locales[lang].copyright.license.name }}
-        </a>
-        {% endcapture %}
 
-          {{ site.data.locales[lang].copyright.license.template | replace: ':LICENSE_NAME', _replacement }}
-        {% endif %}
-      </div>
+    <div class="license-wrapper">
+      {% if site.data.locales[lang].copyright.license.template %}
+        {% capture _replacement %}
+      <a href="{{ site.data.locales[lang].copyright.license.link }}">
+        {{ site.data.locales[lang].copyright.license.name }}
+      </a>
+      {% endcapture %}
 
-      {% include post-sharing.html lang=lang %}
+        {{ site.data.locales[lang].copyright.license.template | replace: ':LICENSE_NAME', _replacement }}
+      {% endif %}
     </div>
+
+    {% include post-sharing.html lang=lang %}
+
+    </div>
+
     <!-- .post-tail-bottom -->
+
   </div>
+
+  <div class="col-lg-8 col-md-10 mx-auto">
+      
+      <script src="https://utteranc.es/client.js"
+          repo="greedun/greedun.github.io"
+          issue-term="url"
+          theme="github-light"
+          crossorigin="anonymous"
+          async>
+      </script>
+    </div>
   <!-- div.post-tail-wrapper -->
 </article>
