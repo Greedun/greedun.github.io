@@ -2,7 +2,7 @@
 layout: post
 date: 2024-02-12
 title: "jekyll-github.io 연동"
-tags: [github.io, blog, ]
+tags: [blog, github, ]
 categories: [환경구축, ]
 ---
 
