@@ -12,11 +12,30 @@ const notion = new Client({
 });
 
 function escapeCodeBlock(body) {
-  const regex = /``` ([\s\S]*?) ```/g
+  const regex = /```([\s\S]*?)```/g;
+  return body.replace(regex, function (match, htmlBlock) {
+    return "\n{% raw %}\n```" + htmlBlock.trim() + "\n```\n{% endraw %}\n";
+  });
+}
 
-  return body.replace(regex, function(match, htmlBlock) {
-    return // raw 관련 이슈로 하단의 Repository 확인 부탁드립니다.
-  })
+function replaceTitleOutsideRawBlocks(body) {
+  const rawBlocks = [];
+  const placeholder = "%%RAW_BLOCK%%";
+  body = body.replace(/{% raw %}[\s\S]*?{% endraw %}/g, (match) => {
+    rawBlocks.push(match);
+    return placeholder;
+  });
+
+  const regex = /\n#[^\n]+\n/g;
+  body = body.replace(regex, function (match) {
+    return "\n" + match.replace("\n#", "\n##");
+  });
+
+  rawBlocks.forEach(block => {
+    body = body.replace(placeholder, block);
+  });
+
+  return body;
 }
 
 // passing notion client to the option
@@ -28,8 +47,7 @@ const n2m = new NotionToMarkdown({ notionClient: notion });
   fs.mkdirSync(root, { recursive: true });
 
   const databaseId = process.env.DATABASE_ID;
-  // TODO has_more
-  const response = await notion.databases.query({
+  let response = await notion.databases.query({
     database_id: databaseId,
     filter: {
       property: "공개",
@@ -38,8 +56,24 @@ const n2m = new NotionToMarkdown({ notionClient: notion });
       },
     },
   });
-  for (const r of response.results) {
-    // console.log(r)
+
+  const pages = response.results;
+  while (response.has_more) {
+    const nextCursor = response.next_cursor;
+    response = await notion.databases.query({
+      database_id: databaseId,
+      start_cursor: nextCursor,
+      filter: {
+        property: "공개",
+        checkbox: {
+          equals: true,
+        },
+      },
+    });
+    pages.push(...response.results);
+  }
+
+  for (const r of pages) {
     const id = r.id;
     // date
     let date = moment(r.created_time).format("YYYY-MM-DD");
@@ -98,7 +132,11 @@ title: "${title}"${fmtags}${fmcats}
 `;
     const mdblocks = await n2m.pageToMarkdown(id);
     let md = n2m.toMarkdownString(mdblocks)["parent"];
+    if (md === "") {
+      continue;
+    }
     md = escapeCodeBlock(md);
+    md = replaceTitleOutsideRawBlocks(md);
 
     const ftitle = `${date}-${title.replaceAll(" ", "-")}.md`;
 
@@ -129,7 +167,7 @@ title: "${title}"${fmtags}${fmcats}
         if (p1 === "") res = "";
         else res = `_${p1}_`;
 
-        return // 정규표현식 이슈로 아래 하단의 Repository 확인 부탁드립니다.
+        return `![${index++}](/${filename})${res}`;
       }
     );
 
