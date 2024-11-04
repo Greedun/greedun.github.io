@@ -2,8 +2,8 @@
 layout: post
 date: 2024-10-15
 title: "Shell shock"
-tags: [bash, command injection, ]
-categories: [1-day, ]
+tags: [command injection, ]
+categories: [1-day, bash, ]
 ---
 
 
